@@ -1,0 +1,7 @@
+{application, translation_service, [
+    {description, "Real-time Translation Service"},
+    {vsn, "1.0.0"},
+    {mod, {translation_service_app, []}},
+    {applications, [kernel, stdlib, sasl, lager, cowboy, jsx, tolkflip_shared]},
+    {env, []}
+]}.

@@ -1,0 +1,7 @@
+{application, message_store_service, [
+    {description, "Message Persistence Service"},
+    {vsn, "1.0.0"},
+    {mod, {message_store_service_app, []}},
+    {applications, [kernel, stdlib, sasl, lager, cowboy, jsx, tolkflip_shared]},
+    {env, []}
+]}.

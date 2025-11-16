@@ -1,0 +1,7 @@
+{application, notification_service, [
+    {description, "Push Notification Service"},
+    {vsn, "1.0.0"},
+    {mod, {notification_service_app, []}},
+    {applications, [kernel, stdlib, sasl, lager, cowboy, jsx, tolkflip_shared]},
+    {env, []}
+]}.
