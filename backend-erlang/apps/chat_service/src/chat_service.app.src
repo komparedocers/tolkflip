@@ -1,0 +1,19 @@
+{application, chat_service, [
+    {description, "Real-time Chat Service with WebSocket"},
+    {vsn, "1.0.0"},
+    {registered, []},
+    {mod, {chat_service_app, []}},
+    {applications, [
+        kernel,
+        stdlib,
+        sasl,
+        lager,
+        cowboy,
+        jsx,
+        tolkflip_shared
+    ]},
+    {env, []},
+    {modules, []},
+    {licenses, ["Apache 2.0"]},
+    {links, []}
+]}.

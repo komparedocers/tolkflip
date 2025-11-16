@@ -1,0 +1,7 @@
+{application, presence_service, [
+    {description, "Real-time Presence Service"},
+    {vsn, "1.0.0"},
+    {mod, {presence_service_app, []}},
+    {applications, [kernel, stdlib, sasl, lager, cowboy, jsx, tolkflip_shared]},
+    {env, []}
+]}.

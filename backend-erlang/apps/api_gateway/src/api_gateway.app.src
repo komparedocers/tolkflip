@@ -1,0 +1,7 @@
+{application, api_gateway, [
+    {description, "API Gateway - Routes requests to backend services"},
+    {vsn, "1.0.0"},
+    {mod, {api_gateway_app, []}},
+    {applications, [kernel, stdlib, sasl, lager, cowboy, jsx]},
+    {env, []}
+]}.

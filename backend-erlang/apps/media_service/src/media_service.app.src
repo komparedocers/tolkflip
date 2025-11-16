@@ -1,0 +1,7 @@
+{application, media_service, [
+    {description, "Media Storage Service"},
+    {vsn, "1.0.0"},
+    {mod, {media_service_app, []}},
+    {applications, [kernel, stdlib, sasl, lager, cowboy, jsx, tolkflip_shared]},
+    {env, []}
+]}.

@@ -1,0 +1,7 @@
+{application, webrtc_service, [
+    {description, "WebRTC Signaling Service"},
+    {vsn, "1.0.0"},
+    {mod, {webrtc_service_app, []}},
+    {applications, [kernel, stdlib, sasl, lager, cowboy, jsx, tolkflip_shared]},
+    {env, []}
+]}.
