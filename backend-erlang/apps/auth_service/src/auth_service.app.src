@@ -1,0 +1,19 @@
+{application, auth_service, [
+    {description, "Authentication and Authorization Service"},
+    {vsn, "1.0.0"},
+    {registered, []},
+    {mod, {auth_service_app, []}},
+    {applications, [
+        kernel,
+        stdlib,
+        sasl,
+        lager,
+        cowboy,
+        jsx,
+        tolkflip_shared
+    ]},
+    {env, []},
+    {modules, []},
+    {licenses, ["Apache 2.0"]},
+    {links, []}
+]}.

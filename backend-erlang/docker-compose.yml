@@ -1,0 +1,173 @@
+version: '3.8'
+
+services:
+  # Cassandra Database
+  cassandra:
+    image: cassandra:4.1
+    container_name: tolkflip-erlang-cassandra
+    ports:
+      - "9042:9042"
+    environment:
+      - CASSANDRA_CLUSTER_NAME=tolkflip-cluster
+      - CASSANDRA_DC=datacenter1
+      - CASSANDRA_RACK=rack1
+    volumes:
+      - cassandra_data:/var/lib/cassandra
+      - ../infrastructure/cassandra/init-scripts:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "cqlsh", "-e", "describe keyspaces"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - tolkflip-erlang
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: tolkflip-erlang-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --maxmemory 2gb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - tolkflip-erlang
+
+  # MinIO Object Storage
+  minio:
+    image: minio/minio:latest
+    container_name: tolkflip-erlang-minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - tolkflip-erlang
+
+  # Erlang Backend Services
+  tolkflip-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tolkflip-erlang-backend
+    ports:
+      - "3000:3000"   # API Gateway
+      - "3001:3001"   # Auth Service
+      - "3002:3002"   # User Service
+      - "3003:3003"   # Chat Service
+      - "3004:3004"   # Translation Service
+      - "3005:3005"   # Transcription Service
+      - "3006:3006"   # Media Service
+      - "3007:3007"   # Presence Service
+      - "3008:3008"   # Message Store Service
+      - "3009:3009"   # Notification Service
+      - "3010:3010"   # WebRTC Service
+      - "3011:3011"   # Group Service
+    environment:
+      # Cassandra
+      - CASSANDRA_HOSTS=cassandra
+      - CASSANDRA_PORT=9042
+      - CASSANDRA_KEYSPACE=tolkflip
+
+      # Redis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+
+      # JWT
+      - JWT_SECRET=your-jwt-secret-change-in-production
+
+      # MinIO
+      - MINIO_ENDPOINT=minio
+      - MINIO_PORT=9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+
+      # Erlang VM
+      - ERL_MAX_PORTS=1000000
+      - ERL_MAX_ETS_TABLES=100000
+    depends_on:
+      cassandra:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - tolkflip-erlang
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8G
+        reservations:
+          cpus: '2'
+          memory: 4G
+
+  # Prometheus Monitoring (Optional)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: tolkflip-erlang-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ../infrastructure/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - tolkflip-erlang
+    restart: unless-stopped
+
+  # Grafana Dashboards (Optional)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: tolkflip-erlang-grafana
+    ports:
+      - "3012:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - tolkflip-erlang
+    restart: unless-stopped
+
+volumes:
+  cassandra_data:
+    driver: local
+  redis_data:
+    driver: local
+  minio_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  tolkflip-erlang:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16

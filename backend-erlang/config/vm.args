@@ -1,0 +1,61 @@
+## Erlang VM Configuration for Tolkflip
+## Optimized for high concurrency and low latency
+
+## Node name
+-name tolkflip@127.0.0.1
+
+## Cookie for distributed Erlang
+-setcookie tolkflip_secret_cookie_change_in_production
+
+## Increase number of concurrent ports (for network connections)
++Q 1000000
+
+## Increase max processes (default is 262144)
+## Can handle millions of WebSocket connections
++P 10000000
+
+## Async thread pool size (for file I/O and network)
++A 128
+
+## Scheduler bind type (spread across cores)
++sbt db
+
+## Enable SMP (Symmetric Multi-Processing)
+-smp enable
+
+## Scheduler utilization balancing
++sub true
+
+## Dirty schedulers (for CPU-intensive work)
++SDcpu 8:8
++SDio 8:8
+
+## Memory allocators optimization
++MBas aobf
++MBacul 0
++MBlmbcs 512
++MBsbct 100
++MBsmbcs 256
+
+## Garbage collection
+-env ERL_FULLSWEEP_AFTER 0
++hmax 67108864
+
+## Enable kernel polling (epoll on Linux)
++K true
+
+## Distribution buffer size (for distributed Erlang)
++zdbbl 32768
+
+## Enable time warp mode for better time handling
++C multi_time_warp
+
+## Maximum number of ETS tables
+-env ERL_MAX_ETS_TABLES 100000
+
+## Crash dump location
+-env ERL_CRASH_DUMP /var/log/erlang/erl_crash.dump
+
+## Logging
+-kernel logger_level info
+-kernel logger '[{handler, default, logger_std_h, #{}}]'
