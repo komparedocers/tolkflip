@@ -1,0 +1,21 @@
+{application, tolkflip_shared, [
+    {description, "Shared utilities and database clients for Tolkflip"},
+    {vsn, "1.0.0"},
+    {registered, []},
+    {mod, {tolkflip_shared_app, []}},
+    {applications, [
+        kernel,
+        stdlib,
+        sasl,
+        lager,
+        erlcass,
+        eredis,
+        poolboy,
+        jwerl,
+        uuid
+    ]},
+    {env, []},
+    {modules, []},
+    {licenses, ["Apache 2.0"]},
+    {links, []}
+]}.
