@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="fragment_container" type="id" />
+    <item name="bottom_navigation" type="id" />
+    <item name="recycler_view_chats" type="id" />
+    <item name="recycler_view_contacts" type="id" />
+    <item name="phone_input" type="id" />
+    <item name="code_input" type="id" />
+    <item name="send_code_button" type="id" />
+    <item name="verify_button" type="id" />
+</resources>
