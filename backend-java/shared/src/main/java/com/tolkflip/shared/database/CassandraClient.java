@@ -50,6 +50,18 @@ public class CassandraClient {
     }
 
     /**
+     * Convenience constructor that reads from config JsonObject
+     */
+    public CassandraClient(Vertx vertx, io.vertx.core.json.JsonObject config) {
+        this(vertx,
+             config.getJsonObject("cassandra", new io.vertx.core.json.JsonObject())
+                   .getJsonArray("contact_points", new io.vertx.core.json.JsonArray().add("127.0.0.1"))
+                   .getList(),
+             config.getJsonObject("cassandra", new io.vertx.core.json.JsonObject())
+                   .getString("keyspace", "tolkflip"));
+    }
+
+    /**
      * Execute async query and return Future
      */
     public Future<ResultSet> executeAsync(String query, Object... params) {
@@ -277,6 +289,165 @@ public class CassandraClient {
 
         return executeAsync(query, status, threadId, messageId)
             .mapEmpty();
+    }
+
+    // Overloaded methods with String parameters for convenience
+
+    public Future<io.vertx.core.json.JsonObject> getUserById(String userId) {
+        return getUserById(UUID.fromString(userId))
+            .map(row -> row != null ? rowToJson(row) : null);
+    }
+
+    public Future<String> saveMessage(String threadId, String senderId, String receiverId,
+                                       String messageType, String content, String originalLanguage,
+                                       String status, boolean isGroup) {
+        return saveMessage(
+            UUID.fromString(threadId),
+            UUID.fromString(senderId),
+            UUID.fromString(receiverId),
+            messageType, content, originalLanguage, status, isGroup
+        ).map(UUID::toString);
+    }
+
+    public Future<io.vertx.core.json.JsonArray> getMessages(String threadId, int limit) {
+        return getMessages(UUID.fromString(threadId), limit)
+            .map(this::rowsToJsonArray);
+    }
+
+    public Future<Void> updateMessageStatus(String messageId, String status) {
+        // Since we don't have thread_id, this is a simplified version
+        // In production, you'd need to query for thread_id first or use a different table
+        String query = "UPDATE messages SET status = ? WHERE message_id = ?";
+        return executeAsync(query, status, UUID.fromString(messageId)).mapEmpty();
+    }
+
+    public Future<Void> updateUserProfile(String userId, String displayName,
+                                          String profilePicture, String bio) {
+        String query = "UPDATE users SET display_name = ?, profile_picture = ?, bio = ? WHERE user_id = ?";
+        return executeAsync(query, displayName, profilePicture, bio, UUID.fromString(userId))
+            .mapEmpty();
+    }
+
+    public Future<Void> updateUserLanguages(String userId, String nativeLanguage,
+                                           List<String> learningLanguages) {
+        String query = "UPDATE users SET primary_language = ?, additional_languages = ? WHERE user_id = ?";
+        return executeAsync(query, nativeLanguage, learningLanguages, UUID.fromString(userId))
+            .mapEmpty();
+    }
+
+    public Future<String> createGroup(String name, String description, String creatorId,
+                                      List<String> memberIds) {
+        UUID groupId = UUID.randomUUID();
+        String query = "INSERT INTO group_chats (group_id, group_name, created_by, " +
+                      "created_at, description, member_count) " +
+                      "VALUES (?, ?, ?, ?, ?, ?)";
+
+        Instant now = Instant.now();
+        int memberCount = memberIds.size() + 1; // Including creator
+
+        return executeAsync(query, groupId, name, UUID.fromString(creatorId),
+                          now, description, memberCount)
+            .compose(v -> {
+                // Add creator as admin
+                return addGroupMember(groupId.toString(), creatorId, "admin");
+            })
+            .compose(v -> {
+                // Add other members
+                List<Future> memberFutures = new ArrayList<>();
+                for (String memberId : memberIds) {
+                    memberFutures.add(addGroupMember(groupId.toString(), memberId, "member"));
+                }
+                return Future.all(memberFutures);
+            })
+            .map(v -> groupId.toString());
+    }
+
+    public Future<io.vertx.core.json.JsonObject> getGroup(String groupId) {
+        String query = "SELECT * FROM group_chats WHERE group_id = ?";
+        return executeAsync(query, UUID.fromString(groupId))
+            .map(rs -> {
+                Row row = rs.one();
+                return row != null ? rowToJson(row) : null;
+            });
+    }
+
+    public Future<Void> addGroupMember(String groupId, String userId, String role) {
+        return addGroupMember(UUID.fromString(groupId), UUID.fromString(userId),
+                            role, "en")
+            .mapEmpty();
+    }
+
+    public Future<Void> removeGroupMember(String groupId, String userId) {
+        String query = "DELETE FROM group_members WHERE group_id = ? AND user_id = ?";
+        return executeAsync(query, UUID.fromString(groupId), UUID.fromString(userId))
+            .mapEmpty();
+    }
+
+    public Future<Void> saveMedia(String mediaId, String fileName, String contentType, long fileSize) {
+        String query = "INSERT INTO media_files (media_id, file_name, content_type, file_size, uploaded_at) " +
+                      "VALUES (?, ?, ?, ?, ?)";
+        Instant now = Instant.now();
+        return executeAsync(query, UUID.fromString(mediaId), fileName, contentType, fileSize, now)
+            .mapEmpty();
+    }
+
+    public Future<io.vertx.core.json.JsonObject> getMedia(String mediaId) {
+        String query = "SELECT * FROM media_files WHERE media_id = ?";
+        return executeAsync(query, UUID.fromString(mediaId))
+            .map(rs -> {
+                Row row = rs.one();
+                return row != null ? rowToJson(row) : null;
+            });
+    }
+
+    public Future<Void> saveNotification(String userId, String notificationId, String title,
+                                         String message, String type) {
+        String query = "INSERT INTO notifications (user_id, notification_id, title, message, " +
+                      "type, created_at, is_read) " +
+                      "VALUES (?, ?, ?, ?, ?, ?, false)";
+        Instant now = Instant.now();
+        return executeAsync(query, UUID.fromString(userId), UUID.fromString(notificationId),
+                          title, message, type, now)
+            .mapEmpty();
+    }
+
+    public Future<String> saveTranscription(String audioUrl, String transcribedText, String language) {
+        UUID transcriptionId = UUID.randomUUID();
+        String query = "INSERT INTO transcriptions (transcription_id, audio_url, transcribed_text, " +
+                      "language, created_at) " +
+                      "VALUES (?, ?, ?, ?, ?)";
+        Instant now = Instant.now();
+        return executeAsync(query, transcriptionId, audioUrl, transcribedText, language, now)
+            .map(v -> transcriptionId.toString());
+    }
+
+    // Helper methods to convert Row to JSON
+    private io.vertx.core.json.JsonObject rowToJson(Row row) {
+        io.vertx.core.json.JsonObject json = new io.vertx.core.json.JsonObject();
+        row.getColumnDefinitions().forEach(def -> {
+            String name = def.getName().asInternal();
+            Object value = row.getObject(name);
+            if (value != null) {
+                if (value instanceof UUID) {
+                    json.put(name, value.toString());
+                } else if (value instanceof Instant) {
+                    json.put(name, ((Instant) value).toEpochMilli());
+                } else if (value instanceof List) {
+                    json.put(name, new io.vertx.core.json.JsonArray((List) value));
+                } else {
+                    json.put(name, value);
+                }
+            }
+        });
+        return json;
+    }
+
+    private io.vertx.core.json.JsonArray rowsToJsonArray(List<Row> rows) {
+        io.vertx.core.json.JsonArray array = new io.vertx.core.json.JsonArray();
+        for (Row row : rows) {
+            array.add(rowToJson(row));
+        }
+        return array;
     }
 
     /**

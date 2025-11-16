@@ -30,6 +30,17 @@ public class RedisClient {
     }
 
     /**
+     * Convenience constructor that reads from config JsonObject
+     */
+    public RedisClient(Vertx vertx, JsonObject config) {
+        this(vertx,
+             config.getJsonObject("redis", new JsonObject())
+                   .getString("host", "127.0.0.1"),
+             config.getJsonObject("redis", new JsonObject())
+                   .getInteger("port", 6379));
+    }
+
+    /**
      * Set a key-value pair
      */
     public Future<Void> set(String key, String value) {
@@ -67,6 +78,14 @@ public class RedisClient {
     public Future<Boolean> exists(String key) {
         return redis.send(Request.cmd(Command.EXISTS).arg(key))
             .map(response -> response != null && response.toInteger() > 0);
+    }
+
+    /**
+     * Set expiration on a key (in seconds)
+     */
+    public Future<Void> expire(String key, int seconds) {
+        return redis.send(Request.cmd(Command.EXPIRE).arg(key).arg(seconds))
+            .mapEmpty();
     }
 
     /**
