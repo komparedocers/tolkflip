@@ -80,7 +80,8 @@ class DatabaseModels {
         created_at timestamp,
         avatar_url text,
         description text,
-        member_count int
+        member_count int,
+        metadata map<text, text>
       )`,
 
       // Group members table
@@ -288,8 +289,158 @@ class DatabaseModels {
     return await this.client.execute(query, params, { prepare: true });
   }
 
+  // Group operations
+  async createGroup(groupData) {
+    const query = `
+      INSERT INTO group_chats (group_id, group_name, created_by, created_at,
+                              avatar_url, description, member_count)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
+    const params = [
+      groupData.group_id,
+      groupData.name,
+      groupData.created_by,
+      groupData.created_at,
+      groupData.group_icon || '',
+      groupData.description || '',
+      groupData.member_count || 1
+    ];
+    return await this.client.execute(query, params, { prepare: true });
+  }
+
+  async getGroupById(groupId) {
+    const query = 'SELECT * FROM group_chats WHERE group_id = ?';
+    const result = await this.client.execute(query, [groupId], { prepare: true });
+    return result.rows[0];
+  }
+
+  async updateGroup(groupId, updates) {
+    const setClauses = [];
+    const params = [];
+
+    if (updates.name) {
+      setClauses.push('group_name = ?');
+      params.push(updates.name);
+    }
+    if (updates.description !== undefined) {
+      setClauses.push('description = ?');
+      params.push(updates.description);
+    }
+    if (updates.group_icon !== undefined) {
+      setClauses.push('avatar_url = ?');
+      params.push(updates.group_icon);
+    }
+
+    if (setClauses.length === 0) return;
+
+    params.push(groupId);
+
+    const query = `
+      UPDATE group_chats
+      SET ${setClauses.join(', ')}
+      WHERE group_id = ?
+    `;
+
+    return await this.client.execute(query, params, { prepare: true });
+  }
+
+  async updateGroupMemberCount(groupId, count) {
+    const query = 'UPDATE group_chats SET member_count = ? WHERE group_id = ?';
+    return await this.client.execute(query, [count, groupId], { prepare: true });
+  }
+
+  async deleteGroup(groupId) {
+    // Delete all group members first
+    await this.client.execute('DELETE FROM group_members WHERE group_id = ?', [groupId], { prepare: true });
+
+    // Delete the group
+    const query = 'DELETE FROM group_chats WHERE group_id = ?';
+    return await this.client.execute(query, [groupId], { prepare: true });
+  }
+
+  // Group member operations
+  async addGroupMember(memberData) {
+    const query = `
+      INSERT INTO group_members (group_id, user_id, joined_at, role, preferred_language)
+      VALUES (?, ?, ?, ?, ?)
+    `;
+    const params = [
+      memberData.group_id,
+      memberData.user_id,
+      memberData.joined_at,
+      memberData.role || 'member',
+      memberData.preferred_language || 'en'
+    ];
+    return await this.client.execute(query, params, { prepare: true });
+  }
+
+  async getGroupMember(groupId, userId) {
+    const query = 'SELECT * FROM group_members WHERE group_id = ? AND user_id = ?';
+    const result = await this.client.execute(query, [groupId, userId], { prepare: true });
+    return result.rows[0];
+  }
+
+  async getGroupMembers(groupId, limit = 100, offset = 0) {
+    const query = `
+      SELECT * FROM group_members
+      WHERE group_id = ?
+      LIMIT ?
+    `;
+    const result = await this.client.execute(query, [groupId, limit], { prepare: true });
+    return result.rows;
+  }
+
+  async removeGroupMember(groupId, userId) {
+    const query = 'DELETE FROM group_members WHERE group_id = ? AND user_id = ?';
+    return await this.client.execute(query, [groupId, userId], { prepare: true });
+  }
+
+  async updateGroupMemberRole(groupId, userId, newRole) {
+    const query = `
+      UPDATE group_members
+      SET role = ?
+      WHERE group_id = ? AND user_id = ?
+    `;
+    return await this.client.execute(query, [newRole, groupId, userId], { prepare: true });
+  }
+
+  async getUserGroups(userId, limit = 50, offset = 0) {
+    const query = `
+      SELECT group_id FROM group_members
+      WHERE user_id = ?
+      LIMIT ?
+    `;
+    const result = await this.client.execute(query, [userId, limit], { prepare: true });
+
+    // Fetch full group details
+    const groups = [];
+    for (const row of result.rows) {
+      const group = await this.getGroupById(row.group_id);
+      if (group) {
+        groups.push(group);
+      }
+    }
+
+    return groups;
+  }
+
+  async updateGroupSettings(groupId, settings) {
+    // Note: This requires adding a settings column to group_chats table
+    // For now, we'll store it in a metadata column
+    const query = `
+      UPDATE group_chats
+      SET metadata = ?
+      WHERE group_id = ?
+    `;
+    return await this.client.execute(query, [settings, groupId], { prepare: true });
+  }
+
   async close() {
     await this.client.shutdown();
+  }
+
+  async shutdown() {
+    await this.close();
   }
 }
 

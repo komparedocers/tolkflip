@@ -74,6 +74,8 @@ services:
       - PRESENCE_SERVICE_URL=http://presence-service:3007
       - MESSAGE_STORE_SERVICE_URL=http://message-store-service:3008
       - NOTIFICATION_SERVICE_URL=http://notification-service:3009
+      - WEBRTC_SERVICE_URL=http://webrtc-service:3010
+      - GROUP_SERVICE_URL=http://group-service:3011
       - ALLOWED_ORIGINS=*
     depends_on:
       - auth-service
@@ -252,6 +254,44 @@ services:
       - APNS_KEY_ID=${APNS_KEY_ID}
       - APNS_TEAM_ID=${APNS_TEAM_ID}
       - APNS_BUNDLE_ID=com.tolkflip
+    depends_on:
+      - cassandra
+      - redis
+    restart: unless-stopped
+
+  # WebRTC Signaling Service (NEW - voice/video calls)
+  webrtc-service:
+    build:
+      context: ./backend/webrtc-service
+      dockerfile: Dockerfile
+    container_name: tolkflip-webrtc-service
+    ports:
+      - "3010:3010"
+    environment:
+      - PORT=3010
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=your-jwt-secret-change-in-production
+      - TURN_URL=${TURN_URL}
+      - TURN_USERNAME=${TURN_USERNAME}
+      - TURN_CREDENTIAL=${TURN_CREDENTIAL}
+      - ALLOWED_ORIGINS=*
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  # Group Service (NEW - group chat management)
+  group-service:
+    build:
+      context: ./backend
+      dockerfile: group-service/Dockerfile
+    container_name: tolkflip-group-service
+    environment:
+      - PORT=3011
+      - CASSANDRA_HOSTS=cassandra
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - ALLOWED_ORIGINS=*
     depends_on:
       - cassandra
       - redis

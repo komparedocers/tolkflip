@@ -61,7 +61,8 @@ CREATE TABLE IF NOT EXISTS group_chats (
   created_at timestamp,
   avatar_url text,
   description text,
-  member_count int
+  member_count int,
+  metadata map<text, text>
 );
 
 -- Group members table
