@@ -1,0 +1,97 @@
+syntax = "proto3";
+
+package tolkflip;
+
+option java_package = "com.tolkflip.proto";
+option java_outer_classname = "MessagesProto";
+
+// Message types
+enum MessageType {
+  TEXT = 0;
+  IMAGE = 1;
+  VIDEO = 2;
+  AUDIO = 3;
+  FILE = 4;
+  VOICE_NOTE = 5;
+}
+
+// Message status
+enum MessageStatus {
+  SENT = 0;
+  DELIVERED = 1;
+  READ = 2;
+  FAILED = 3;
+}
+
+// User presence
+enum PresenceStatus {
+  OFFLINE = 0;
+  ONLINE = 1;
+  AWAY = 2;
+  TYPING = 3;
+}
+
+// Chat message
+message ChatMessage {
+  string message_id = 1;
+  string thread_id = 2;
+  string sender_id = 3;
+  string receiver_id = 4;
+  MessageType type = 5;
+  string content = 6;
+  string original_language = 7;
+  string encrypted_content = 8;
+  int64 timestamp = 9;
+  MessageStatus status = 10;
+  bool is_group = 11;
+  map<string, string> metadata = 12;
+  repeated string media_urls = 13;
+}
+
+// Translation request
+message TranslationRequest {
+  string text = 1;
+  string source_language = 2;
+  string target_language = 3;
+  string user_id = 4;
+  string thread_id = 5;
+}
+
+// Translation response
+message TranslationResponse {
+  string translated_text = 1;
+  string source_language = 2;
+  string target_language = 3;
+  float confidence = 4;
+  string emotion = 5;
+}
+
+// Presence update
+message PresenceUpdate {
+  string user_id = 1;
+  PresenceStatus status = 2;
+  int64 last_seen = 3;
+  string thread_id = 4;
+}
+
+// User profile
+message UserProfile {
+  string user_id = 1;
+  string phone_number = 2;
+  string display_name = 3;
+  string avatar_url = 4;
+  string primary_language = 5;
+  repeated string additional_languages = 6;
+  int64 created_at = 7;
+  int64 last_active = 8;
+}
+
+// Thread settings
+message ThreadSettings {
+  string thread_id = 1;
+  string user_id = 2;
+  string preferred_language = 3;
+  bool show_original = 4;
+  bool enable_emotion_detection = 5;
+  map<string, string> custom_settings = 6;
+}

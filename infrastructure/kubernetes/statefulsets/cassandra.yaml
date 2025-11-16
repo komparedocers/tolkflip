@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: cassandra
+  namespace: tolkflip
+spec:
+  serviceName: cassandra-service
+  replicas: 3
+  selector:
+    matchLabels:
+      app: cassandra
+  template:
+    metadata:
+      labels:
+        app: cassandra
+    spec:
+      containers:
+      - name: cassandra
+        image: cassandra:4.1
+        ports:
+        - containerPort: 9042
+          name: cql
+        - containerPort: 7000
+          name: intra-node
+        - containerPort: 7001
+          name: tls-intra-node
+        - containerPort: 7199
+          name: jmx
+        env:
+        - name: CASSANDRA_SEEDS
+          value: "cassandra-0.cassandra-service.tolkflip.svc.cluster.local"
+        - name: CASSANDRA_CLUSTER_NAME
+          value: "tolkflip-cluster"
+        - name: CASSANDRA_DC
+          value: "DC1"
+        - name: CASSANDRA_RACK
+          value: "Rack1"
+        - name: CASSANDRA_ENDPOINT_SNITCH
+          value: "GossipingPropertyFileSnitch"
+        volumeMounts:
+        - name: cassandra-data
+          mountPath: /var/lib/cassandra
+        resources:
+          requests:
+            memory: "4Gi"
+            cpu: "2000m"
+          limits:
+            memory: "8Gi"
+            cpu: "4000m"
+  volumeClaimTemplates:
+  - metadata:
+      name: cassandra-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 100Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cassandra-service
+  namespace: tolkflip
+spec:
+  clusterIP: None
+  selector:
+    app: cassandra
+  ports:
+  - port: 9042
+    name: cql

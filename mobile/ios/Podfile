@@ -1,0 +1,49 @@
+# Podfile for Tolkflip iOS
+
+platform :ios, '14.0'
+
+target 'Tolkflip' do
+  use_frameworks!
+
+  # Networking
+  pod 'Alamofire', '~> 5.8'
+  pod 'Socket.IO-Client-Swift', '~> 16.0'
+
+  # UI
+  pod 'SDWebImage', '~> 5.18'
+  pod 'SnapKit', '~> 5.6'
+  pod 'IQKeyboardManagerSwift', '~> 6.5'
+
+  # Signal Protocol for E2E encryption
+  pod 'SignalProtocolSwift', '~> 1.0'
+
+  # Firebase
+  pod 'Firebase/Messaging'
+  pod 'Firebase/Analytics'
+
+  # Audio/Video
+  pod 'AVFoundation'
+
+  # Local database
+  pod 'RealmSwift', '~> 10.42'
+
+  # Utilities
+  pod 'SwiftyJSON', '~> 5.0'
+  pod 'KeychainAccess', '~> 4.2'
+
+  target 'TolkflipTests' do
+    inherit! :search_paths
+  end
+
+  target 'TolkflipUITests' do
+    inherit! :search_paths
+  end
+end
+
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
+    end
+  end
+end
