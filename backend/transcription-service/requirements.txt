@@ -1,0 +1,10 @@
+flask==2.3.2
+openai-whisper==20230314
+torch==2.0.1
+redis==4.5.5
+cassandra-driver==3.28.0
+gunicorn==20.1.0
+python-dotenv==1.0.0
+pydub==0.25.1
+ffmpeg-python==0.2.0
+requests==2.31.0

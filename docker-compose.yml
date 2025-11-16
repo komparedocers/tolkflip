@@ -1,0 +1,255 @@
+version: '3.8'
+
+services:
+  # Cassandra Database
+  cassandra:
+    image: cassandra:4.1
+    container_name: tolkflip-cassandra
+    ports:
+      - "9042:9042"
+    environment:
+      - CASSANDRA_CLUSTER_NAME=tolkflip-cluster
+      - CASSANDRA_DC=datacenter1
+      - CASSANDRA_RACK=rack1
+    volumes:
+      - cassandra_data:/var/lib/cassandra
+    healthcheck:
+      test: ["CMD", "cqlsh", "-e", "describe keyspaces"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Redis Cache and Presence
+  redis:
+    image: redis:7-alpine
+    container_name: tolkflip-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MinIO Object Storage
+  minio:
+    image: minio/minio:latest
+    container_name: tolkflip-minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./backend/api-gateway
+      dockerfile: Dockerfile
+    container_name: tolkflip-api-gateway
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - JWT_SECRET=your-jwt-secret-change-in-production
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - USER_SERVICE_URL=http://user-service:3002
+      - CHAT_SERVICE_URL=http://chat-service:3003
+      - TRANSLATION_SERVICE_URL=http://translation-service:3004
+      - TRANSCRIPTION_SERVICE_URL=http://transcription-service:3005
+      - MEDIA_SERVICE_URL=http://media-service:3006
+      - PRESENCE_SERVICE_URL=http://presence-service:3007
+      - ALLOWED_ORIGINS=*
+    depends_on:
+      - auth-service
+      - user-service
+      - chat-service
+    restart: unless-stopped
+
+  # Authentication Service
+  auth-service:
+    build:
+      context: ./backend
+      dockerfile: auth-service/Dockerfile
+    container_name: tolkflip-auth-service
+    environment:
+      - PORT=3001
+      - CASSANDRA_HOSTS=cassandra
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=your-jwt-secret-change-in-production
+      - JWT_REFRESH_SECRET=your-refresh-secret-change-in-production
+      - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}
+      - TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN}
+      - TWILIO_PHONE_NUMBER=${TWILIO_PHONE_NUMBER}
+    depends_on:
+      - cassandra
+      - redis
+    restart: unless-stopped
+
+  # User Service
+  user-service:
+    build:
+      context: ./backend
+      dockerfile: user-service/Dockerfile
+    container_name: tolkflip-user-service
+    environment:
+      - PORT=3002
+      - CASSANDRA_HOSTS=cassandra
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - cassandra
+      - redis
+    restart: unless-stopped
+
+  # Chat Service
+  chat-service:
+    build:
+      context: ./backend
+      dockerfile: chat-service/Dockerfile
+    container_name: tolkflip-chat-service
+    environment:
+      - PORT=3003
+      - CASSANDRA_HOSTS=cassandra
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=your-jwt-secret-change-in-production
+      - TRANSLATION_SERVICE_URL=http://translation-service:3004
+      - ALLOWED_ORIGINS=*
+    depends_on:
+      - cassandra
+      - redis
+    restart: unless-stopped
+
+  # Translation Service
+  translation-service:
+    build:
+      context: ./backend/translation-service
+      dockerfile: Dockerfile
+    container_name: tolkflip-translation-service
+    environment:
+      - PORT=3004
+      - CASSANDRA_HOSTS=cassandra
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - cassandra
+      - redis
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+
+  # Transcription Service
+  transcription-service:
+    build:
+      context: ./backend/transcription-service
+      dockerfile: Dockerfile
+    container_name: tolkflip-transcription-service
+    environment:
+      - PORT=3005
+      - CASSANDRA_HOSTS=cassandra
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - WHISPER_MODEL_SIZE=base
+      - TRANSLATION_SERVICE_URL=http://translation-service:3004
+    depends_on:
+      - cassandra
+      - redis
+      - translation-service
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+
+  # Media Service
+  media-service:
+    build:
+      context: ./backend
+      dockerfile: media-service/Dockerfile
+    container_name: tolkflip-media-service
+    environment:
+      - PORT=3006
+      - CASSANDRA_HOSTS=cassandra
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - MINIO_ENDPOINT=minio
+      - MINIO_PORT=9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+      - MINIO_USE_SSL=false
+    depends_on:
+      - cassandra
+      - redis
+      - minio
+    restart: unless-stopped
+
+  # Presence Service
+  presence-service:
+    build:
+      context: ./backend
+      dockerfile: presence-service/Dockerfile
+    container_name: tolkflip-presence-service
+    environment:
+      - PORT=3007
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  # Prometheus Monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: tolkflip-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infrastructure/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    restart: unless-stopped
+
+  # Grafana Dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: tolkflip-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./infrastructure/monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+volumes:
+  cassandra_data:
+  redis_data:
+  minio_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  default:
+    name: tolkflip-network

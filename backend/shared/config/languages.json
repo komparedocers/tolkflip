@@ -1,0 +1,63 @@
+{
+  "supported_languages": {
+    "european": [
+      { "code": "en", "name": "English", "marian_model": "en-de" },
+      { "code": "de", "name": "German", "marian_model": "de-en" },
+      { "code": "fr", "name": "French", "marian_model": "fr-en" },
+      { "code": "es", "name": "Spanish", "marian_model": "es-en" },
+      { "code": "it", "name": "Italian", "marian_model": "it-en" },
+      { "code": "pt", "name": "Portuguese", "marian_model": "pt-en" },
+      { "code": "nl", "name": "Dutch", "marian_model": "nl-en" },
+      { "code": "pl", "name": "Polish", "marian_model": "pl-en" },
+      { "code": "cs", "name": "Czech", "marian_model": "cs-en" },
+      { "code": "sk", "name": "Slovak", "marian_model": "sk-en" },
+      { "code": "ro", "name": "Romanian", "marian_model": "ro-en" },
+      { "code": "hu", "name": "Hungarian", "marian_model": "hu-en" },
+      { "code": "sv", "name": "Swedish", "marian_model": "sv-en" },
+      { "code": "da", "name": "Danish", "marian_model": "da-en" },
+      { "code": "fi", "name": "Finnish", "marian_model": "fi-en" },
+      { "code": "no", "name": "Norwegian", "marian_model": "no-en" },
+      { "code": "el", "name": "Greek", "marian_model": "el-en" },
+      { "code": "bg", "name": "Bulgarian", "marian_model": "bg-en" },
+      { "code": "hr", "name": "Croatian", "marian_model": "hr-en" },
+      { "code": "sr", "name": "Serbian", "marian_model": "sr-en" },
+      { "code": "sl", "name": "Slovenian", "marian_model": "sl-en" },
+      { "code": "et", "name": "Estonian", "marian_model": "et-en" },
+      { "code": "lv", "name": "Latvian", "marian_model": "lv-en" },
+      { "code": "lt", "name": "Lithuanian", "marian_model": "lt-en" }
+    ],
+    "asian": [
+      { "code": "zh", "name": "Chinese (Simplified)", "marian_model": "zh-en" },
+      { "code": "zh-TW", "name": "Chinese (Traditional)", "marian_model": "zh-en" },
+      { "code": "ja", "name": "Japanese", "marian_model": "ja-en" },
+      { "code": "ko", "name": "Korean", "marian_model": "ko-en" },
+      { "code": "hi", "name": "Hindi", "marian_model": "hi-en" },
+      { "code": "bn", "name": "Bengali", "marian_model": "bn-en" },
+      { "code": "ta", "name": "Tamil", "marian_model": "ta-en" },
+      { "code": "te", "name": "Telugu", "marian_model": "te-en" },
+      { "code": "mr", "name": "Marathi", "marian_model": "mr-en" },
+      { "code": "gu", "name": "Gujarati", "marian_model": "gu-en" },
+      { "code": "kn", "name": "Kannada", "marian_model": "kn-en" },
+      { "code": "ml", "name": "Malayalam", "marian_model": "ml-en" },
+      { "code": "pa", "name": "Punjabi", "marian_model": "pa-en" },
+      { "code": "ur", "name": "Urdu", "marian_model": "ur-en" },
+      { "code": "vi", "name": "Vietnamese", "marian_model": "vi-en" },
+      { "code": "th", "name": "Thai", "marian_model": "th-en" },
+      { "code": "id", "name": "Indonesian", "marian_model": "id-en" },
+      { "code": "ms", "name": "Malay", "marian_model": "ms-en" }
+    ],
+    "middle_east": [
+      { "code": "ar", "name": "Arabic", "marian_model": "ar-en" },
+      { "code": "he", "name": "Hebrew", "marian_model": "he-en" },
+      { "code": "fa", "name": "Persian", "marian_model": "fa-en" },
+      { "code": "tr", "name": "Turkish", "marian_model": "tr-en" }
+    ],
+    "slavic": [
+      { "code": "ru", "name": "Russian", "marian_model": "ru-en" },
+      { "code": "uk", "name": "Ukrainian", "marian_model": "uk-en" },
+      { "code": "be", "name": "Belarusian", "marian_model": "be-en" }
+    ]
+  },
+  "free_language_limit": 2,
+  "default_language": "en"
+}
