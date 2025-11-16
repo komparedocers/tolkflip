@@ -15,7 +15,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [api-gateway, auth-service, chat-service, user-service, media-service, presence-service]
+        service: [api-gateway, auth-service, chat-service, user-service, media-service,
+                  presence-service, message-store-service, notification-service,
+                  webrtc-service, group-service]
 
     steps:
     - uses: actions/checkout@v3
@@ -63,7 +65,8 @@ jobs:
       matrix:
         service: [api-gateway, auth-service, chat-service, user-service,
                   media-service, presence-service, translation-service,
-                  transcription-service]
+                  transcription-service, message-store-service, notification-service,
+                  webrtc-service, group-service]
 
     steps:
     - uses: actions/checkout@v3
