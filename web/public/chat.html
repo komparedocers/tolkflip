@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tolkflip - Chat</title>
+    <link rel="stylesheet" href="design-tokens.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family-sans);
+            background: var(--bg-secondary);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: white;
+            border-right: 1px solid var(--gray-200);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: var(--space-lg) var(--space-xl);
+            border-bottom: 1px solid var(--gray-200);
+            background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 100%);
+            color: white;
+        }
+
+        .profile-section {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-full);
+            background: linear-gradient(135deg, var(--secondary-400) 0%, var(--secondary-600) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-bold);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .avatar-large {
+            width: 56px;
+            height: 56px;
+            font-size: var(--font-size-2xl);
+        }
+
+        .user-info h3 {
+            font-weight: var(--font-weight-semibold);
+            font-size: var(--font-size-lg);
+            margin-bottom: 2px;
+        }
+
+        .user-status {
+            font-size: var(--font-size-sm);
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: var(--radius-full);
+            background: var(--success);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .search-bar {
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: var(--space-md) var(--space-md) var(--space-md) 44px;
+            border: none;
+            border-radius: var(--radius-lg);
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            color: white;
+            font-size: var(--font-size-sm);
+            transition: all var(--transition-fast);
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .search-input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: var(--space-md);
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0.7;
+        }
+
+        /* Chat List */
+        .chat-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .chat-item {
+            padding: var(--space-lg) var(--space-xl);
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            border-left: 3px solid transparent;
+        }
+
+        .chat-item:hover {
+            background: var(--bg-secondary);
+        }
+
+        .chat-item.active {
+            background: var(--primary-50);
+            border-left-color: var(--primary-600);
+        }
+
+        .chat-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .chat-name {
+            font-weight: var(--font-weight-semibold);
+            color: var(--gray-900);
+            font-size: var(--font-size-base);
+        }
+
+        .chat-time {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+        }
+
+        .chat-preview {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-message {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .unread-badge {
+            background: var(--primary-600);
+            color: white;
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-semibold);
+            padding: 2px 8px;
+            border-radius: var(--radius-full);
+            min-width: 20px;
+            text-align: center;
+        }
+
+        /* Main Chat Area */
+        .chat-area {
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+
+        .chat-header-bar {
+            padding: var(--space-lg) var(--space-xl);
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .chat-user-info {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .chat-user-details h3 {
+            font-weight: var(--font-weight-semibold);
+            font-size: var(--font-size-lg);
+            color: var(--gray-900);
+            margin-bottom: 2px;
+        }
+
+        .chat-user-details p {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+        }
+
+        .chat-actions {
+            display: flex;
+            gap: var(--space-sm);
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+            font-size: 1.2rem;
+        }
+
+        .icon-btn:hover {
+            background: var(--gray-200);
+        }
+
+        /* Messages Area */
+        .messages-area {
+            flex: 1;
+            padding: var(--space-xl);
+            overflow-y: auto;
+            background: linear-gradient(to bottom, #f9fafb 0%, #ffffff 100%);
+        }
+
+        .message-group {
+            margin-bottom: var(--space-xl);
+        }
+
+        .message {
+            display: flex;
+            gap: var(--space-md);
+            margin-bottom: var(--space-md);
+            animation: messageSlideIn 0.3s ease-out;
+        }
+
+        .message.sent {
+            flex-direction: row-reverse;
+        }
+
+        .message-bubble {
+            max-width: 60%;
+            padding: var(--space-md) var(--space-lg);
+            border-radius: var(--radius-xl);
+            position: relative;
+        }
+
+        .message.received .message-bubble {
+            background: white;
+            box-shadow: var(--shadow-sm);
+            border-bottom-left-radius: var(--radius-sm);
+        }
+
+        .message.sent .message-bubble {
+            background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 100%);
+            color: white;
+            border-bottom-right-radius: var(--radius-sm);
+        }
+
+        .message-content {
+            font-size: var(--font-size-base);
+            line-height: 1.5;
+            margin-bottom: var(--space-xs);
+        }
+
+        .message-translation {
+            font-size: var(--font-size-sm);
+            opacity: 0.8;
+            padding-top: var(--space-sm);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            margin-top: var(--space-sm);
+        }
+
+        .message.received .message-translation {
+            border-top-color: var(--gray-200);
+        }
+
+        .message-meta {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            font-size: var(--font-size-xs);
+            opacity: 0.7;
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: var(--space-lg) var(--space-xl);
+            background: white;
+            border-top: 1px solid var(--gray-200);
+        }
+
+        .input-container {
+            display: flex;
+            gap: var(--space-md);
+            align-items: flex-end;
+        }
+
+        .input-actions {
+            display: flex;
+            gap: var(--space-sm);
+        }
+
+        .message-input {
+            flex: 1;
+            padding: var(--space-md) var(--space-lg);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-xl);
+            font-size: var(--font-size-base);
+            font-family: var(--font-family-sans);
+            resize: none;
+            max-height: 120px;
+            transition: all var(--transition-fast);
+        }
+
+        .message-input:focus {
+            outline: none;
+            border-color: var(--primary-500);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .send-btn {
+            width: 48px;
+            height: 48px;
+            border: none;
+            background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 100%);
+            color: white;
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all var(--transition-base);
+            box-shadow: var(--shadow-md);
+        }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .send-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-sm) var(--space-md);
+            color: var(--text-secondary);
+            font-size: var(--font-size-sm);
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: var(--radius-full);
+            background: var(--gray-400);
+            animation: typingBounce 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        /* Animations */
+        @keyframes messageSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes typingBounce {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-8px);
+            }
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-secondary);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: var(--space-lg);
+            opacity: 0.5;
+        }
+
+        .empty-title {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-semibold);
+            margin-bottom: var(--space-sm);
+            color: var(--gray-700);
+        }
+
+        .empty-desc {
+            font-size: var(--font-size-base);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .app-container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .sidebar.mobile-visible {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="profile-section">
+                    <div class="avatar avatar-large">JD</div>
+                    <div class="user-info">
+                        <h3>John Doe</h3>
+                        <div class="user-status">
+                            <span class="status-indicator"></span>
+                            <span>Online</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="search-bar">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" class="search-input" placeholder="Search conversations...">
+                </div>
+            </div>
+
+            <div class="chat-list" id="chatList">
+                <div class="chat-item active">
+                    <div class="avatar">MC</div>
+                    <div class="chat-info">
+                        <div class="chat-header">
+                            <span class="chat-name">Maria Chen</span>
+                            <span class="chat-time">2m ago</span>
+                        </div>
+                        <div class="chat-preview">
+                            <span class="chat-message">你好！我很高兴认识你</span>
+                            <span class="unread-badge">3</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-item">
+                    <div class="avatar">AK</div>
+                    <div class="chat-info">
+                        <div class="chat-header">
+                            <span class="chat-name">Ahmed Khan</span>
+                            <span class="chat-time">1h ago</span>
+                        </div>
+                        <div class="chat-preview">
+                            <span class="chat-message">مرحبا! كيف حالك؟</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-item">
+                    <div class="avatar">SP</div>
+                    <div class="chat-info">
+                        <div class="chat-header">
+                            <span class="chat-name">Sophie Petit</span>
+                            <span class="chat-time">3h ago</span>
+                        </div>
+                        <div class="chat-preview">
+                            <span class="chat-message">Bonjour! Comment allez-vous?</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="chat-area">
+            <div class="chat-header-bar">
+                <div class="chat-user-info">
+                    <div class="avatar">MC</div>
+                    <div class="chat-user-details">
+                        <h3>Maria Chen</h3>
+                        <p>🇨🇳 Chinese → 🇺🇸 English</p>
+                    </div>
+                </div>
+
+                <div class="chat-actions">
+                    <button class="icon-btn" title="Voice Call">📞</button>
+                    <button class="icon-btn" title="Video Call">📹</button>
+                    <button class="icon-btn" title="More Options">⚙️</button>
+                </div>
+            </div>
+
+            <div class="messages-area" id="messagesArea">
+                <div class="message-group">
+                    <div class="message received">
+                        <div class="avatar">MC</div>
+                        <div class="message-bubble">
+                            <div class="message-content">你好！我很高兴认识你</div>
+                            <div class="message-translation">Hello! I'm very happy to meet you</div>
+                            <div class="message-meta">
+                                <span>10:30 AM</span>
+                                <span>•</span>
+                                <span>Translated from Chinese</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="message sent">
+                        <div class="message-bubble">
+                            <div class="message-content">Hello! Nice to meet you too! 😊</div>
+                            <div class="message-meta">
+                                <span>10:31 AM</span>
+                                <span>•</span>
+                                <span>✓✓</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="message received">
+                        <div class="avatar">MC</div>
+                        <div class="message-bubble">
+                            <div class="message-content">你会说中文吗？</div>
+                            <div class="message-translation">Do you speak Chinese?</div>
+                            <div class="message-meta">
+                                <span>10:32 AM</span>
+                                <span>•</span>
+                                <span>Translated from Chinese</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="typing-indicator">
+                    <div class="typing-dots">
+                        <span class="typing-dot"></span>
+                        <span class="typing-dot"></span>
+                        <span class="typing-dot"></span>
+                    </div>
+                    <span>Maria is typing...</span>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <div class="input-container">
+                    <div class="input-actions">
+                        <button class="icon-btn" title="Attach File">📎</button>
+                        <button class="icon-btn" title="Voice Message">🎤</button>
+                    </div>
+                    <textarea
+                        class="message-input"
+                        placeholder="Type a message..."
+                        rows="1"
+                        id="messageInput"
+                    ></textarea>
+                    <button class="send-btn" id="sendBtn">
+                        ➤
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="chat.js"></script>
+</body>
+</html>

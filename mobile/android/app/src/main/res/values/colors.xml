@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Legacy Colors (keep for compatibility) -->
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>
@@ -7,4 +8,65 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Professional Brand Colors - Modern Purple/Blue Gradient -->
+    <color name="primary_50">#F0F4FF</color>
+    <color name="primary_100">#E0E7FF</color>
+    <color name="primary_200">#C7D2FE</color>
+    <color name="primary_300">#A5B4FC</color>
+    <color name="primary_400">#818CF8</color>
+    <color name="primary_500">#6366F1</color>
+    <color name="primary_600">#4F46E5</color>
+    <color name="primary_700">#4338CA</color>
+    <color name="primary_800">#3730A3</color>
+    <color name="primary_900">#312E81</color>
+
+    <!-- Secondary Colors - Vibrant Accent -->
+    <color name="secondary_50">#FDF4FF</color>
+    <color name="secondary_100">#FAE8FF</color>
+    <color name="secondary_200">#F5D0FE</color>
+    <color name="secondary_300">#F0ABFC</color>
+    <color name="secondary_400">#E879F9</color>
+    <color name="secondary_500">#D946EF</color>
+    <color name="secondary_600">#C026D3</color>
+    <color name="secondary_700">#A21CAF</color>
+    <color name="secondary_800">#86198F</color>
+    <color name="secondary_900">#701A75</color>
+
+    <!-- Neutral Grays -->
+    <color name="gray_50">#F9FAFB</color>
+    <color name="gray_100">#F3F4F6</color>
+    <color name="gray_200">#E5E7EB</color>
+    <color name="gray_300">#D1D5DB</color>
+    <color name="gray_400">#9CA3AF</color>
+    <color name="gray_500">#6B7280</color>
+    <color name="gray_600">#4B5563</color>
+    <color name="gray_700">#374151</color>
+    <color name="gray_800">#1F2937</color>
+    <color name="gray_900">#111827</color>
+
+    <!-- Semantic Colors -->
+    <color name="success">#10B981</color>
+    <color name="success_light">#D1FAE5</color>
+    <color name="error">#EF4444</color>
+    <color name="error_light">#FEE2E2</color>
+    <color name="warning">#F59E0B</color>
+    <color name="warning_light">#FEF3C7</color>
+    <color name="info">#3B82F6</color>
+    <color name="info_light">#DBEAFE</color>
+
+    <!-- Background Colors -->
+    <color name="bg_primary">#FFFFFF</color>
+    <color name="bg_secondary">#F9FAFB</color>
+    <color name="bg_tertiary">#F3F4F6</color>
+
+    <!-- Text Colors -->
+    <color name="text_primary">#111827</color>
+    <color name="text_secondary">#6B7280</color>
+    <color name="text_tertiary">#9CA3AF</color>
+    <color name="text_inverse">#FFFFFF</color>
+
+    <!-- Chat Bubble Colors -->
+    <color name="chat_bubble_sent">#4F46E5</color>
+    <color name="chat_bubble_received">#FFFFFF</color>
 </resources>

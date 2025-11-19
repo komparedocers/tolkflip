@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tolkflip - Connect Across Languages</title>
+    <link rel="stylesheet" href="design-tokens.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family-sans);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-md);
+            color: var(--text-primary);
+        }
+
+        .container {
+            max-width: 1400px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-3xl);
+            align-items: center;
+        }
+
+        /* Hero Section */
+        .hero {
+            color: white;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            margin-bottom: var(--space-2xl);
+        }
+
+        .logo-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #fff 0%, #f0f4ff 100%);
+            border-radius: var(--radius-xl);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .logo-text {
+            font-family: var(--font-family-display);
+            font-size: var(--font-size-3xl);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .hero h1 {
+            font-family: var(--font-family-display);
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: var(--space-lg);
+            background: linear-gradient(to right, #fff 0%, #e0e7ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: var(--font-size-xl);
+            line-height: 1.6;
+            opacity: 0.95;
+            margin-bottom: var(--space-xl);
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-lg);
+            margin-top: var(--space-2xl);
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            transition: all var(--transition-base);
+        }
+
+        .feature-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: var(--space-sm);
+        }
+
+        .feature-title {
+            font-weight: var(--font-weight-semibold);
+            font-size: var(--font-size-lg);
+            margin-bottom: var(--space-xs);
+        }
+
+        .feature-desc {
+            font-size: var(--font-size-sm);
+            opacity: 0.9;
+        }
+
+        /* Login Card */
+        .login-card {
+            background: white;
+            border-radius: var(--radius-2xl);
+            padding: var(--space-3xl);
+            box-shadow: var(--shadow-2xl);
+            animation: fadeInRight 0.8s ease-out;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: var(--space-2xl);
+        }
+
+        .login-header h2 {
+            font-family: var(--font-family-display);
+            font-size: var(--font-size-3xl);
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: var(--space-sm);
+        }
+
+        .login-header p {
+            color: var(--text-secondary);
+            font-size: var(--font-size-base);
+        }
+
+        .form-group {
+            margin-bottom: var(--space-lg);
+        }
+
+        .form-label {
+            display: block;
+            font-weight: var(--font-weight-medium);
+            color: var(--gray-700);
+            margin-bottom: var(--space-sm);
+            font-size: var(--font-size-sm);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: var(--space-md) var(--space-lg);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            font-size: var(--font-size-base);
+            font-family: var(--font-family-sans);
+            transition: all var(--transition-fast);
+            background: var(--bg-secondary);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-500);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .phone-input-container {
+            display: flex;
+            gap: var(--space-sm);
+        }
+
+        .country-code {
+            width: 120px;
+            padding: var(--space-md);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            font-size: var(--font-size-base);
+            background: var(--bg-secondary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .country-code:focus {
+            outline: none;
+            border-color: var(--primary-500);
+            background: white;
+        }
+
+        .btn {
+            width: 100%;
+            padding: var(--space-md) var(--space-xl);
+            border: none;
+            border-radius: var(--radius-lg);
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-semibold);
+            cursor: pointer;
+            transition: all var(--transition-base);
+            font-family: var(--font-family-sans);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 100%);
+            color: white;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            margin: var(--space-xl) 0;
+            color: var(--text-secondary);
+            font-size: var(--font-size-sm);
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--gray-200);
+        }
+
+        .social-login {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+
+        .btn-social {
+            padding: var(--space-md);
+            border: 2px solid var(--gray-200);
+            background: white;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-sm);
+            font-weight: var(--font-weight-medium);
+            transition: all var(--transition-fast);
+            color: var(--gray-700);
+        }
+
+        .btn-social:hover {
+            border-color: var(--gray-300);
+            background: var(--bg-secondary);
+        }
+
+        .message {
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-lg);
+            font-size: var(--font-size-sm);
+            display: none;
+        }
+
+        .message.show {
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .message.success {
+            background: var(--success-light);
+            color: var(--success);
+            border-left: 4px solid var(--success);
+        }
+
+        .message.error {
+            background: var(--error-light);
+            color: var(--error);
+            border-left: 4px solid var(--error);
+        }
+
+        .verification-input {
+            display: flex;
+            gap: var(--space-sm);
+            justify-content: center;
+            margin-bottom: var(--space-xl);
+        }
+
+        .verification-input input {
+            width: 50px;
+            height: 60px;
+            text-align: center;
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            background: var(--bg-secondary);
+        }
+
+        .verification-input input:focus {
+            outline: none;
+            border-color: var(--primary-500);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .timer {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-lg);
+            font-size: var(--font-size-sm);
+        }
+
+        .resend-link {
+            color: var(--primary-600);
+            text-decoration: none;
+            font-weight: var(--font-weight-medium);
+        }
+
+        .resend-link:hover {
+            color: var(--primary-700);
+            text-decoration: underline;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .loading {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+                max-width: 500px;
+            }
+
+            .hero {
+                display: none;
+            }
+
+            .features {
+                display: none;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .login-card {
+                padding: var(--space-xl);
+            }
+
+            .social-login {
+                grid-template-columns: 1fr;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="hero">
+            <div class="logo">
+                <div class="logo-icon">🌍</div>
+                <div class="logo-text">Tolkflip</div>
+            </div>
+
+            <h1>Connect Across<br>Languages</h1>
+            <p>Break language barriers with real-time translation. Chat with anyone, anywhere, in any language.</p>
+
+            <div class="features">
+                <div class="feature-card">
+                    <div class="feature-icon">💬</div>
+                    <div class="feature-title">Real-time Translation</div>
+                    <div class="feature-desc">Messages translated instantly as you type</div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <div class="feature-title">End-to-End Encrypted</div>
+                    <div class="feature-desc">Your conversations stay private and secure</div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <div class="feature-title">Cross-Platform</div>
+                    <div class="feature-desc">Seamless experience on web, iOS, and Android</div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🎙️</div>
+                    <div class="feature-title">Voice & Video</div>
+                    <div class="feature-desc">HD calls with live translation</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Card -->
+        <div class="login-card">
+            <div class="login-header">
+                <h2>Welcome Back</h2>
+                <p>Sign in to continue your conversations</p>
+            </div>
+
+            <div id="messageContainer"></div>
+
+            <!-- Phone Login -->
+            <div id="phoneLoginSection">
+                <div class="form-group">
+                    <label class="form-label">Phone Number</label>
+                    <div class="phone-input-container">
+                        <select class="country-code" id="countryCode">
+                            <option value="+1">🇺🇸 +1</option>
+                            <option value="+44">🇬🇧 +44</option>
+                            <option value="+91">🇮🇳 +91</option>
+                            <option value="+86">🇨🇳 +86</option>
+                            <option value="+81">🇯🇵 +81</option>
+                            <option value="+82">🇰🇷 +82</option>
+                            <option value="+33">🇫🇷 +33</option>
+                            <option value="+49">🇩🇪 +49</option>
+                        </select>
+                        <input
+                            type="tel"
+                            id="phoneNumber"
+                            class="form-input"
+                            placeholder="Enter your phone number"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <button id="sendCodeBtn" class="btn btn-primary">
+                    Continue with Phone
+                </button>
+
+                <div class="divider">or</div>
+
+                <div class="social-login">
+                    <button class="btn btn-social">
+                        <span>🔵</span>
+                        <span>Google</span>
+                    </button>
+                    <button class="btn btn-social">
+                        <span>📘</span>
+                        <span>Facebook</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Verification Section -->
+            <div id="verificationSection" style="display: none;">
+                <div class="form-group">
+                    <label class="form-label">Enter Verification Code</label>
+                    <p class="timer">Code sent to <span id="phoneDisplay"></span></p>
+
+                    <div class="verification-input">
+                        <input type="text" maxlength="1" class="code-input" data-index="0">
+                        <input type="text" maxlength="1" class="code-input" data-index="1">
+                        <input type="text" maxlength="1" class="code-input" data-index="2">
+                        <input type="text" maxlength="1" class="code-input" data-index="3">
+                        <input type="text" maxlength="1" class="code-input" data-index="4">
+                        <input type="text" maxlength="1" class="code-input" data-index="5">
+                    </div>
+
+                    <div class="timer">
+                        <span id="timer">Resend code in <span id="countdown">60</span>s</span>
+                        <a href="#" id="resendLink" class="resend-link" style="display: none;">Resend Code</a>
+                    </div>
+                </div>
+
+                <button id="verifyCodeBtn" class="btn btn-primary">
+                    Verify & Continue
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="login.js"></script>
+</body>
+</html>

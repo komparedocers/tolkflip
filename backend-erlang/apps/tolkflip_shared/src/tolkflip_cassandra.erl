@@ -6,7 +6,8 @@
 -module(tolkflip_cassandra).
 
 %% User operations
--export([create_user/5, get_user_by_phone/1, get_user_by_id/1]).
+-export([create_user/5, get_user_by_phone/1, get_user_by_id/1,
+         update_user_profile/4, update_user_languages/3]).
 
 %% Message operations
 -export([save_message/8, get_messages/2, update_message_status/3]).
@@ -19,6 +20,15 @@
 
 %% Translation cache
 -export([cache_translation/5, get_cached_translation/3]).
+
+%% Media operations
+-export([save_media/4, get_media/1]).
+
+%% Notification operations
+-export([save_notification/5, get_notifications/2]).
+
+%% Transcription operations
+-export([save_transcription/3, get_transcription/1]).
 
 %%====================================================================
 %% User Operations
@@ -58,6 +68,25 @@ get_user_by_id(UserId) ->
         {ok, []} -> {error, not_found};
         Error -> Error
     end.
+
+update_user_profile(UserId, DisplayName, Bio, AvatarUrl) ->
+    Query = <<"UPDATE users SET display_name = ?, bio = ?, avatar_url = ? WHERE user_id = ?">>,
+    Params = [
+        {text, DisplayName},
+        {text, Bio},
+        {text, AvatarUrl},
+        {uuid, UserId}
+    ],
+    execute_query(Query, Params).
+
+update_user_languages(UserId, PrimaryLanguage, AdditionalLanguages) ->
+    Query = <<"UPDATE users SET primary_language = ?, additional_languages = ? WHERE user_id = ?">>,
+    Params = [
+        {text, PrimaryLanguage},
+        {list, text, AdditionalLanguages},
+        {uuid, UserId}
+    ],
+    execute_query(Query, Params).
 
 %%====================================================================
 %% Message Operations
@@ -190,6 +219,97 @@ get_cached_translation(SourceText, SourceLang, TargetLang) ->
         {text, SourceLang},
         {text, TargetLang}
     ],
+
+    case execute_query(Query, Params) of
+        {ok, [Row]} -> {ok, Row};
+        {ok, []} -> {error, not_found};
+        Error -> Error
+    end.
+
+%%====================================================================
+%% Media Operations
+%%====================================================================
+
+save_media(MediaId, UserId, MediaType, FileUrl) ->
+    Query = <<"INSERT INTO media_files (media_id, user_id, media_type, file_url, "
+              "uploaded_at, file_size, mime_type) "
+              "VALUES (?, ?, ?, ?, toTimestamp(now()), 0, 'application/octet-stream')">>,
+
+    Params = [
+        {uuid, MediaId},
+        {uuid, UserId},
+        {text, MediaType},
+        {text, FileUrl}
+    ],
+
+    execute_query(Query, Params).
+
+get_media(MediaId) ->
+    Query = <<"SELECT * FROM media_files WHERE media_id = ?">>,
+    Params = [{uuid, MediaId}],
+
+    case execute_query(Query, Params) of
+        {ok, [Row]} -> {ok, Row};
+        {ok, []} -> {error, not_found};
+        Error -> Error
+    end.
+
+%%====================================================================
+%% Notification Operations
+%%====================================================================
+
+save_notification(UserId, NotificationType, Title, Body, Data) ->
+    NotificationId = uuid:get_v1(uuid:new(self())),
+
+    Query = <<"INSERT INTO notifications (user_id, notification_id, notification_type, "
+              "title, body, data, created_at, is_read) "
+              "VALUES (?, ?, ?, ?, ?, ?, toTimestamp(now()), false)">>,
+
+    Params = [
+        {uuid, UserId},
+        {uuid, NotificationId},
+        {text, NotificationType},
+        {text, Title},
+        {text, Body},
+        {text, Data}
+    ],
+
+    case execute_query(Query, Params) of
+        ok -> {ok, NotificationId};
+        Error -> Error
+    end.
+
+get_notifications(UserId, Limit) ->
+    Query = <<"SELECT * FROM notifications WHERE user_id = ? LIMIT ?">>,
+    Params = [{uuid, UserId}, {int, Limit}],
+    execute_query(Query, Params).
+
+%%====================================================================
+%% Transcription Operations
+%%====================================================================
+
+save_transcription(AudioUrl, Language, TranscribedText) ->
+    TranscriptionId = uuid:get_v1(uuid:new(self())),
+
+    Query = <<"INSERT INTO transcriptions (transcription_id, audio_url, language, "
+              "transcribed_text, created_at, confidence) "
+              "VALUES (?, ?, ?, ?, toTimestamp(now()), 0.95)">>,
+
+    Params = [
+        {uuid, TranscriptionId},
+        {text, AudioUrl},
+        {text, Language},
+        {text, TranscribedText}
+    ],
+
+    case execute_query(Query, Params) of
+        ok -> {ok, TranscriptionId};
+        Error -> Error
+    end.
+
+get_transcription(TranscriptionId) ->
+    Query = <<"SELECT * FROM transcriptions WHERE transcription_id = ?">>,
+    Params = [{uuid, TranscriptionId}],
 
     case execute_query(Query, Params) of
         {ok, [Row]} -> {ok, Row};
